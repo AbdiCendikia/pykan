@@ -2272,9 +2272,8 @@ class MultKAN(nn.Module):
 
         # define variables
         if var == None:
-            for ii in range(1, self.width[0][0] + 1):
-                exec(f"x{ii} = sympy.Symbol('x_{ii}')")
-                exec(f"x.append(x{ii})")
+            for ii in range(self.width[0][0]):
+                x.append(sympy.Symbol(f"x_{ii}"))
         elif isinstance(var[0], sympy.Expr):
             x = var
         else:
@@ -2293,21 +2292,26 @@ class MultKAN(nn.Module):
             num_sum = self.width[l + 1][0]
             num_mult = self.width[l + 1][1]
             y = []
+            
             for j in range(self.width_out[l + 1]):
                 yj = 0.
                 for i in range(self.width_in[l]):
                     a, b, c, d = self.symbolic_fun[l].affine[j, i]
                     sympy_fun = self.symbolic_fun[l].funs_sympy[j][i]
+
                     try:
-                        yj += c * sympy_fun(a * x[i] + b) + d
+                        yj += c.detach().item() * sympy_fun(a.detach().item() * x[i] + b.detach().item()) + d.detach().item()
                     except:
                         print('make sure all activations need to be converted to symbolic formulas first!')
                         return
+                
                 yj = self.subnode_scale[l][j] * yj + self.subnode_bias[l][j]
+
                 if simplify == True:
                     y.append(sympy.simplify(yj))
                 else:
                     y.append(yj)
+            
                     
             symbolic_acts_premult.append(y)
                   
@@ -2343,13 +2347,12 @@ class MultKAN(nn.Module):
             output_layer = [(output_layer[i] * stds[i] + means[i]) for i in range(len(output_layer))]
             symbolic_acts[-1] = output_layer
 
-
         self.symbolic_acts = [[symbolic_acts[l][i] for i in range(len(symbolic_acts[l]))] for l in range(len(symbolic_acts))]
         self.symbolic_acts_premult = [[symbolic_acts_premult[l][i] for i in range(len(symbolic_acts_premult[l]))] for l in range(len(symbolic_acts_premult))]
 
         out_dim = len(symbolic_acts[-1])
         #return [symbolic_acts[-1][i] for i in range(len(symbolic_acts[-1]))], x0
-        
+       
         if simplify:
             return [symbolic_acts[-1][i] for i in range(len(symbolic_acts[-1]))], x0
         else:
