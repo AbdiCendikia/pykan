@@ -2307,11 +2307,7 @@ class MultKAN(nn.Module):
                 
                 yj = self.subnode_scale[l][j] * yj + self.subnode_bias[l][j]
 
-                if simplify == True:
-                    y.append(sympy.simplify(yj))
-                else:
-                    y.append(yj)
-            
+                y.append(sympy.simplify(yj))
                     
             symbolic_acts_premult.append(y)
                   
@@ -2350,14 +2346,7 @@ class MultKAN(nn.Module):
         self.symbolic_acts = [[symbolic_acts[l][i] for i in range(len(symbolic_acts[l]))] for l in range(len(symbolic_acts))]
         self.symbolic_acts_premult = [[symbolic_acts_premult[l][i] for i in range(len(symbolic_acts_premult[l]))] for l in range(len(symbolic_acts_premult))]
 
-        out_dim = len(symbolic_acts[-1])
-        #return [symbolic_acts[-1][i] for i in range(len(symbolic_acts[-1]))], x0
-       
-        if simplify:
-            return [symbolic_acts[-1][i] for i in range(len(symbolic_acts[-1]))], x0
-        else:
-            return [symbolic_acts[-1][i] for i in range(len(symbolic_acts[-1]))], x0
-        
+        return [symbolic_acts[-1][i] for i in range(len(symbolic_acts[-1]))], x0        
         
     def expand_depth(self):
         '''

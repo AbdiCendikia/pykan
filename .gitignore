@@ -13,4 +13,6 @@ figures
 molecule
 applications
 experiments
-testrun
+
+testrun/*
+!testrun/*.py
